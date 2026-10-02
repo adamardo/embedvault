@@ -36,7 +36,7 @@ export default async function EditEntryPage({
           type: entry.type,
           summary: entry.summary,
           tags: entry.tags.map((t) => t.tag.name).join(", "),
-          fields: entry as Record<string, string | null>,
+          fields: entry as unknown as Record<string, string | null>,
         }}
       />
     </div>
