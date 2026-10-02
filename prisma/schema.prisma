@@ -1,0 +1,193 @@
+// EmbedVault database schema.
+// Every microcontroller, component, and concept is stored as an "Entry" —
+// one flexible table with a `type` field, rather than separate tables for
+// each category. This keeps search simple (one table to search) and makes
+// it easy to add new categories later without a schema change.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------- Core knowledge entries ----------
+
+model Entry {
+  id          String    @id @default(cuid())
+  type        String // one of: MICROCONTROLLER, COMPONENT, CONCEPT, PROTOCOL (see lib/entry-types.ts)
+  title       String
+  slug        String    @unique // URL-friendly identifier, e.g. "esp32"
+  summary     String // short one-line description, shown in lists/search results
+  overview    String? // longer "what is it" explanation
+
+  // Hardware-specific fields — optional because CONCEPT entries won't use them
+  specifications String? // free-text or JSON string of key specs
+  pinout         String? // free-text description; can hold markdown/table syntax
+  power          String?
+  gpioInfo       String?
+  adcInfo        String?
+  pwmInfo        String?
+  uartInfo       String?
+  spiInfo        String?
+  i2cInfo        String?
+  interruptsInfo String?
+  wifiInfo       String?
+  bluetoothInfo  String?
+  programming    String?
+  wiring         String?
+  commonMistakes String?
+  references     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tags            EntryTag[]
+  codeSnippets    CodeSnippet[]
+  notes           Note[]
+  favorites       Favorite[]
+  troubleshooting TroubleshootingGuide[]
+
+  // Relationships to other entries, e.g. ESP32 -> GPIO -> PWM -> SG90
+  relationsFrom Relation[] @relation("RelationFrom")
+  relationsTo   Relation[] @relation("RelationTo")
+
+  projectLinks ProjectEntry[]
+
+  @@index([type])
+}
+
+// ---------- Tags ----------
+
+model Tag {
+  id    String     @id @default(cuid())
+  name  String     @unique // e.g. "ESP32", "UART", "BareMetal"
+  entries  EntryTag[]
+  snippets SnippetTag[]
+}
+
+model EntryTag {
+  entryId String
+  tagId   String
+  entry   Entry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([entryId, tagId])
+}
+
+// ---------- Code library ----------
+
+model CodeSnippet {
+  id               String   @id @default(cuid())
+  title            String
+  platform         String // e.g. "ESP32", "STM32F401"
+  language         String // e.g. "C", "C++", "MicroPython"
+  style            String? // e.g. "Bare-metal", "Arduino framework", "HAL"
+  description      String?
+  hardwareRequired String?
+  wiring           String?
+  code             String // the actual code block
+  explanation      String?
+  expectedOutput   String?
+  commonErrors     String?
+  tags             SnippetTag[]
+
+  entryId String?
+  entry   Entry?  @relation(fields: [entryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------- Troubleshooting ----------
+
+model TroubleshootingGuide {
+  id               String  @id @default(cuid())
+  problem          String
+  possibleCauses   String
+  symptoms         String?
+  diagnosticSteps  String
+  solution         String
+  example          String?
+  commonMistakes   String?
+
+  entryId String?
+  entry   Entry?  @relation(fields: [entryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------- Projects ----------
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String? // e.g. "Planned", "In progress", "Done"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries ProjectEntry[]
+}
+
+model ProjectEntry {
+  projectId String
+  entryId   String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  entry     Entry   @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, entryId])
+}
+
+// ---------- Favorites ----------
+
+model Favorite {
+  id      String @id @default(cuid())
+  entryId String
+  entry   Entry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([entryId])
+}
+
+// ---------- Personal notes ----------
+
+model Note {
+  id      String @id @default(cuid())
+  entryId String
+  entry   Entry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  content String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------- Relationships between entries ----------
+
+model Relation {
+  id           String @id @default(cuid())
+  fromEntryId  String
+  toEntryId    String
+  label        String? // optional description of the relationship
+
+  fromEntry Entry @relation("RelationFrom", fields: [fromEntryId], references: [id], onDelete: Cascade)
+  toEntry   Entry @relation("RelationTo", fields: [toEntryId], references: [id], onDelete: Cascade)
+
+  @@unique([fromEntryId, toEntryId])
+}
+
+// ---------- Tags on code snippets ----------
+
+model SnippetTag {
+  snippetId String
+  tagId     String
+  snippet   CodeSnippet @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  tag       Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([snippetId, tagId])
+}
