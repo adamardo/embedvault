@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import SearchBox from "@/components/SearchBox";
-import { logout } from "@/app/actions/auth";
 import {
   LayoutDashboard,
   Cpu,
@@ -24,7 +23,6 @@ import {
   Settings,
   Menu,
   X,
-  LogOut,
 } from "lucide-react";
 
 const navItems = [
@@ -51,9 +49,6 @@ export default function Sidebar() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
-
-  // The login page is shown on its own, with no sidebar or menu bar.
-  if (pathname === "/login") return null;
 
   return (
     <>
@@ -120,15 +115,6 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
-        <form action={logout} className="border-t border-white/10 p-3">
-          <button
-            type="submit"
-            className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-sm text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <LogOut size={17} strokeWidth={1.75} />
-            Log out
-          </button>
-        </form>
       </aside>
     </>
   );
