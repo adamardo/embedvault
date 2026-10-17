@@ -8,6 +8,7 @@ import DeleteEntryButton from "@/components/DeleteEntryButton";
 import CodeBlock from "@/components/CodeBlock";
 import FavoriteButton from "@/components/FavoriteButton";
 import EntryNotes from "@/components/EntryNotes";
+import RelationsEditor from "@/components/RelationsEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -29,14 +30,21 @@ export default async function EntryPage({ params }: { params: { slug: string } }
   if (!entry) notFound();
   const isFavorite = entry.favorites.length > 0;
 
+  // Every other entry, for the "Link to..." dropdown.
+  const linkOptions = await prisma.entry.findMany({
+    where: { id: { not: entry.id } },
+    select: { id: true, title: true },
+    orderBy: { title: "asc" },
+  });
+
   // Only show sections that actually have content.
   const values = entry as Record<string, unknown>;
   const sections = ENTRY_FIELDS.filter((f) => values[f.name]);
 
   // Relations can point either way; show both as "related".
   const related = [
-    ...entry.relationsFrom.map((r) => ({ id: r.id, entry: r.toEntry, label: r.label })),
-    ...entry.relationsTo.map((r) => ({ id: r.id, entry: r.fromEntry, label: r.label })),
+    ...entry.relationsFrom.map((r) => ({ relationId: r.id, entry: r.toEntry, label: r.label })),
+    ...entry.relationsTo.map((r) => ({ relationId: r.id, entry: r.fromEntry, label: r.label })),
   ];
 
   return (
@@ -160,23 +168,7 @@ export default async function EntryPage({ params }: { params: { slug: string } }
         />
       </section>
 
-      {related.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-3 text-lg font-semibold text-white">Related</h2>
-          <div className="flex flex-wrap gap-2">
-            {related.map((r) => (
-              <Link
-                key={r.id}
-                href={`/entry/${r.entry.slug}`}
-                className="rounded-md border border-white/10 bg-[#12141a] px-3 py-1.5 text-sm text-gray-300 hover:border-accent/60"
-              >
-                {r.entry.title}
-                {r.label && <span className="ml-2 text-xs text-gray-500">{r.label}</span>}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <RelationsEditor entryId={entry.id} entrySlug={entry.slug} related={related} options={linkOptions} />
     </div>
   );
 }
