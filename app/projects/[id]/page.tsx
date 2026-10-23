@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Pencil, X } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import DeleteEntryButton from "@/components/DeleteEntryButton";
+import { MemberOnly, CanEdit, CanAdd } from "@/components/Permissions";
 import { deleteProject, addProjectEntry, removeProjectEntry } from "@/app/actions/projects";
 
 export const dynamic = "force-dynamic";
@@ -34,13 +35,13 @@ export default async function ProjectPage({ params }: { params: { id: string } }
           {project.description && <p className="mt-2 whitespace-pre-wrap text-gray-400">{project.description}</p>}
         </div>
         <div className="flex items-center gap-2">
-          <Link
+          <CanEdit><Link
             href={`/projects/${project.id}/edit`}
             className="flex items-center gap-1.5 rounded-md border border-white/10 px-3 py-1.5 text-sm text-gray-300 hover:bg-white/5"
           >
             <Pencil size={14} /> Edit
-          </Link>
-          <DeleteEntryButton action={deleteProject} id={project.id} title={project.title} />
+          </Link></CanEdit>
+          <MemberOnly><DeleteEntryButton action={deleteProject} id={project.id} title={project.title} /></MemberOnly>
         </div>
       </div>
 
@@ -61,19 +62,19 @@ export default async function ProjectPage({ params }: { params: { id: string } }
                 {pe.entry.title}
                 <span className="ml-2 text-xs text-gray-500">{pe.entry.type}</span>
               </Link>
-              <form action={removeProjectEntry}>
+              <MemberOnly><form action={removeProjectEntry}>
                 <input type="hidden" name="projectId" value={project.id} />
                 <input type="hidden" name="entryId" value={pe.entryId} />
                 <button type="submit" title="Remove from project" className="text-gray-500 hover:text-red-400">
                   <X size={16} />
                 </button>
-              </form>
+              </form></MemberOnly>
             </div>
           ))}
         </div>
 
         {available.length > 0 ? (
-          <form action={addProjectEntry} className="flex gap-2">
+          <CanAdd><form action={addProjectEntry} className="flex gap-2">
             <input type="hidden" name="projectId" value={project.id} />
             <select
               name="entryId"
@@ -90,7 +91,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
             <button type="submit" className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-light">
               Add
             </button>
-          </form>
+          </form></CanAdd>
         ) : (
           <p className="text-sm text-gray-600">Every entry in your knowledge base is already linked.</p>
         )}

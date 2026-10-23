@@ -1,3 +1,4 @@
+import { CanAdd } from "@/components/Permissions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus } from "lucide-react";
@@ -27,12 +28,12 @@ export default async function CategoryPage({ params }: { params: { category: str
           <h1 className="text-2xl font-semibold text-white">{category.label}</h1>
           <p className="text-sm text-gray-500">{entries.length} entries</p>
         </div>
-        <Link
+        <CanAdd><Link
           href={`/entry/new?type=${category.type}`}
           className="flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-light"
         >
           <Plus size={16} /> New entry
-        </Link>
+        </Link></CanAdd>
       </div>
 
       {entries.length === 0 && (

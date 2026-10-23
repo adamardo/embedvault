@@ -1,13 +1,15 @@
+import { requireCanAdd } from "@/lib/permissions";
 import Link from "next/link";
 import EntryForm from "@/components/EntryForm";
 import { createEntry } from "@/app/actions/entries";
 import { isEntryType } from "@/lib/entry-types";
 
-export default function NewEntryPage({
+export default async function NewEntryPage({
   searchParams,
 }: {
   searchParams: { type?: string; error?: string };
 }) {
+  await requireCanAdd();
   const type = searchParams.type && isEntryType(searchParams.type) ? searchParams.type : undefined;
 
   return (

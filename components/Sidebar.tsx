@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import SearchBox from "@/components/SearchBox";
+import { logout } from "@/app/actions/auth";
 import {
   LayoutDashboard,
   Cpu,
@@ -23,6 +24,8 @@ import {
   Settings,
   Menu,
   X,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 
 const navItems = [
@@ -39,7 +42,7 @@ const navItems = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ loggedIn }: { loggedIn: boolean }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -49,6 +52,9 @@ export default function Sidebar() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  // The login page is shown on its own, with no sidebar or menu bar.
+  if (pathname === "/login") return null;
 
   return (
     <>
@@ -115,6 +121,30 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
+        <div className="border-t border-white/10 p-3">
+          {loggedIn ? (
+            <form action={logout}>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-sm text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <LogOut size={17} strokeWidth={1.75} />
+                Log out
+              </button>
+            </form>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="flex items-center gap-3 rounded-md px-2 py-2 text-sm text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <LogIn size={17} strokeWidth={1.75} />
+                Log in
+              </Link>
+              <p className="px-2 pt-1 text-xs text-gray-600">Guest: read only</p>
+            </>
+          )}
+        </div>
       </aside>
     </>
   );

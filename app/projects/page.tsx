@@ -1,3 +1,4 @@
+import { CanAdd } from "@/components/Permissions";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -24,12 +25,12 @@ export default async function ProjectsPage() {
           <h1 className="text-2xl font-semibold text-white">Projects</h1>
           <p className="text-sm text-gray-500">{projects.length} projects</p>
         </div>
-        <Link
+        <CanAdd><Link
           href="/projects/new"
           className="flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-light"
         >
           <Plus size={16} /> New project
-        </Link>
+        </Link></CanAdd>
       </div>
 
       {projects.length === 0 && (

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireCanAdd, requireMember } from "@/lib/permissions";
 
 const text = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 
@@ -10,6 +11,7 @@ const text = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 // relationsFrom AND relationsTo). Whichever entry you add the link from
 // becomes the "from" side.
 export async function addRelation(formData: FormData) {
+  await requireCanAdd();
   const fromEntryId = text(formData, "fromEntryId");
   const toEntryId = text(formData, "toEntryId");
   const slug = text(formData, "slug");
@@ -36,6 +38,7 @@ export async function addRelation(formData: FormData) {
 }
 
 export async function removeRelation(formData: FormData) {
+  await requireMember();
   const id = text(formData, "id");
   const slug = text(formData, "slug");
   if (id) await prisma.relation.delete({ where: { id } }).catch(() => null);

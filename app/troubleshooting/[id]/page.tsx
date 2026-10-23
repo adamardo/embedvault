@@ -4,6 +4,7 @@ import { Pencil } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import TextBlock from "@/components/TextBlock";
 import DeleteEntryButton from "@/components/DeleteEntryButton";
+import { MemberOnly, CanEdit } from "@/components/Permissions";
 import { deleteGuide } from "@/app/actions/guides";
 
 export const dynamic = "force-dynamic";
@@ -62,13 +63,13 @@ export default async function GuidePage({ params }: { params: { id: string } }) 
           <h1 className="text-2xl font-semibold text-white">{g.problem}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Link
+          <CanEdit><Link
             href={`/troubleshooting/${g.id}/edit`}
             className="flex items-center gap-1.5 rounded-md border border-white/10 px-3 py-1.5 text-sm text-gray-300 hover:bg-white/5"
           >
             <Pencil size={14} /> Edit
-          </Link>
-          <DeleteEntryButton action={deleteGuide} id={g.id} title={g.problem} />
+          </Link></CanEdit>
+          <MemberOnly><DeleteEntryButton action={deleteGuide} id={g.id} title={g.problem} /></MemberOnly>
         </div>
       </div>
 

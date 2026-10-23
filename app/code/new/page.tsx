@@ -1,3 +1,4 @@
+import { requireCanAdd } from "@/lib/permissions";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import SnippetForm from "@/components/SnippetForm";
@@ -7,6 +8,7 @@ import { DEFAULT_PLATFORMS } from "@/lib/platforms";
 export const dynamic = "force-dynamic";
 
 export default async function NewSnippetPage({ searchParams }: { searchParams: { error?: string } }) {
+  await requireCanAdd();
   const [entries, used] = await Promise.all([
     prisma.entry.findMany({ select: { id: true, title: true }, orderBy: { title: "asc" } }),
     prisma.codeSnippet.findMany({ select: { platform: true }, distinct: ["platform"] }),

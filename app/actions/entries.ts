@@ -6,6 +6,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireCanAdd, requireCanEdit, requireMember } from "@/lib/permissions";
 import { ENTRY_FIELDS, isEntryType } from "@/lib/entry-types";
 import { slugify } from "@/lib/slugify";
 
@@ -61,6 +62,7 @@ function fail(path: string, message: string): never {
 }
 
 export async function createEntry(formData: FormData) {
+  await requireCanAdd();
   const title = text(formData, "title");
   const type = text(formData, "type");
   const summary = text(formData, "summary");
@@ -80,6 +82,7 @@ export async function createEntry(formData: FormData) {
 }
 
 export async function updateEntry(formData: FormData) {
+  await requireCanEdit();
   const id = text(formData, "id");
   const slug = text(formData, "slug");
   const title = text(formData, "title");
@@ -105,6 +108,7 @@ export async function updateEntry(formData: FormData) {
 }
 
 export async function deleteEntry(formData: FormData) {
+  await requireMember();
   const id = text(formData, "id");
   if (id) {
     // Tags links, notes, favorites, relations cascade-delete (see schema).

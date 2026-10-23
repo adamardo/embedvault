@@ -4,6 +4,7 @@ import { Pencil } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import CodeBlock from "@/components/CodeBlock";
 import DeleteEntryButton from "@/components/DeleteEntryButton";
+import { MemberOnly, CanEdit } from "@/components/Permissions";
 import { deleteSnippet } from "@/app/actions/snippets";
 
 export const dynamic = "force-dynamic";
@@ -54,13 +55,13 @@ export default async function SnippetPage({ params }: { params: { id: string } }
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link
+          <CanEdit><Link
             href={`/code/${s.id}/edit`}
             className="flex items-center gap-1.5 rounded-md border border-white/10 px-3 py-1.5 text-sm text-gray-300 hover:bg-white/5"
           >
             <Pencil size={14} /> Edit
-          </Link>
-          <DeleteEntryButton action={deleteSnippet} id={s.id} title={s.title} />
+          </Link></CanEdit>
+          <MemberOnly><DeleteEntryButton action={deleteSnippet} id={s.id} title={s.title} /></MemberOnly>
         </div>
       </div>
 

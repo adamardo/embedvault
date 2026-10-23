@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireCanAdd, requireCanEdit, requireMember } from "@/lib/permissions";
 import { parseTagNames } from "@/lib/tags";
 
 // Browsers send textarea line breaks as \r\n; store plain \n instead.
@@ -57,6 +58,7 @@ function validate(d: { title: string; platform: string; language: string; code: 
 }
 
 export async function createSnippet(formData: FormData) {
+  await requireCanAdd();
   const data = await readSnippet(formData);
   validate(data, "/code/new");
 
@@ -69,6 +71,7 @@ export async function createSnippet(formData: FormData) {
 }
 
 export async function updateSnippet(formData: FormData) {
+  await requireCanEdit();
   const id = text(formData, "id");
   if (!id) redirect("/code");
 
@@ -84,6 +87,7 @@ export async function updateSnippet(formData: FormData) {
 }
 
 export async function deleteSnippet(formData: FormData) {
+  await requireMember();
   const id = text(formData, "id");
   if (id) await prisma.codeSnippet.delete({ where: { id } }).catch(() => null);
   revalidatePath("/code");

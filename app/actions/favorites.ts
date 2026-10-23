@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireMember } from "@/lib/permissions";
 
 const text = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 
@@ -9,6 +10,7 @@ const text = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 // added. `redirectTo` lets the button work the same on the entry page and
 // on the Favorites list (where removing one should refresh that list).
 export async function toggleFavorite(formData: FormData) {
+  await requireMember();
   const entryId = text(formData, "entryId");
   if (!entryId) return;
 

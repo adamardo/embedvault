@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireCanAdd, requireCanEdit, requireMember } from "@/lib/permissions";
 
 const norm = (v: FormDataEntryValue | null) => String(v ?? "").replace(/\r\n/g, "\n").trim();
 const text = (fd: FormData, key: string) => norm(fd.get(key));
@@ -10,6 +11,7 @@ const text = (fd: FormData, key: string) => norm(fd.get(key));
 // actions just revalidate that page rather than redirecting anywhere new.
 
 export async function createNote(formData: FormData) {
+  await requireCanAdd();
   const entryId = text(formData, "entryId");
   const content = text(formData, "content");
   const slug = text(formData, "slug");
@@ -20,6 +22,7 @@ export async function createNote(formData: FormData) {
 }
 
 export async function updateNote(formData: FormData) {
+  await requireCanEdit();
   const id = text(formData, "id");
   const content = text(formData, "content");
   const slug = text(formData, "slug");
@@ -31,6 +34,7 @@ export async function updateNote(formData: FormData) {
 }
 
 export async function deleteNote(formData: FormData) {
+  await requireMember();
   const id = text(formData, "id");
   const slug = text(formData, "slug");
   if (id) await prisma.note.delete({ where: { id } }).catch(() => null);

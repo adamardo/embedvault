@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireCanAdd, requireCanEdit, requireMember } from "@/lib/permissions";
 
 // Browsers send textarea line breaks as \r\n; store plain \n instead.
 const norm = (v: FormDataEntryValue | null) => String(v ?? "").replace(/\r\n/g, "\n");
@@ -44,6 +45,7 @@ function validate(
 }
 
 export async function createGuide(formData: FormData) {
+  await requireCanAdd();
   const data = await readGuide(formData);
   validate(data, "/troubleshooting/new");
 
@@ -55,6 +57,7 @@ export async function createGuide(formData: FormData) {
 }
 
 export async function updateGuide(formData: FormData) {
+  await requireCanEdit();
   const id = text(formData, "id");
   if (!id) redirect("/troubleshooting");
 
@@ -69,6 +72,7 @@ export async function updateGuide(formData: FormData) {
 }
 
 export async function deleteGuide(formData: FormData) {
+  await requireMember();
   const id = text(formData, "id");
   if (id) await prisma.troubleshootingGuide.delete({ where: { id } }).catch(() => null);
   revalidatePath("/troubleshooting");

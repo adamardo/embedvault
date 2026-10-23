@@ -1,3 +1,4 @@
+import { requireCanEdit } from "@/lib/permissions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -13,6 +14,7 @@ export default async function EditEntryPage({
   params: { slug: string };
   searchParams: { error?: string };
 }) {
+  await requireCanEdit();
   const entry = await prisma.entry.findUnique({
     where: { slug: params.slug },
     include: { tags: { include: { tag: true } } },

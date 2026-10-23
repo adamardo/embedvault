@@ -1,8 +1,10 @@
+import { requireCanAdd } from "@/lib/permissions";
 import Link from "next/link";
 import ProjectForm from "@/components/ProjectForm";
 import { createProject } from "@/app/actions/projects";
 
-export default function NewProjectPage({ searchParams }: { searchParams: { error?: string } }) {
+export default async function NewProjectPage({ searchParams }: { searchParams: { error?: string } }) {
+  await requireCanAdd();
   return (
     <div className="mx-auto max-w-2xl p-8">
       <Link href="/projects" className="text-sm text-gray-500 hover:text-gray-300">

@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { ENTRY_FIELDS, TYPE_LABELS, categoryUrlFor, isEntryType } from "@/lib/entry-types";
 import { deleteEntry } from "@/app/actions/entries";
 import DeleteEntryButton from "@/components/DeleteEntryButton";
+import { MemberOnly, CanEdit } from "@/components/Permissions";
+import { getPermissions } from "@/lib/permissions";
 import CodeBlock from "@/components/CodeBlock";
 import FavoriteButton from "@/components/FavoriteButton";
 import EntryNotes from "@/components/EntryNotes";
@@ -29,6 +31,7 @@ export default async function EntryPage({ params }: { params: { slug: string } }
   });
   if (!entry) notFound();
   const isFavorite = entry.favorites.length > 0;
+  const perms = await getPermissions();
 
   // Every other entry, for the "Link to..." dropdown.
   const linkOptions = await prisma.entry.findMany({
@@ -69,14 +72,14 @@ export default async function EntryPage({ params }: { params: { slug: string } }
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <FavoriteButton entryId={entry.id} isFavorite={isFavorite} />
-          <Link
+          <MemberOnly><FavoriteButton entryId={entry.id} isFavorite={isFavorite} /></MemberOnly>
+          <CanEdit><Link
             href={`/entry/${entry.slug}/edit`}
             className="flex items-center gap-1.5 rounded-md border border-white/10 px-3 py-1.5 text-sm text-gray-300 hover:bg-white/5"
           >
             <Pencil size={14} /> Edit
-          </Link>
-          <DeleteEntryButton action={deleteEntry} id={entry.id} title={entry.title} />
+          </Link></CanEdit>
+          <MemberOnly><DeleteEntryButton action={deleteEntry} id={entry.id} title={entry.title} /></MemberOnly>
         </div>
       </div>
 
@@ -164,6 +167,9 @@ export default async function EntryPage({ params }: { params: { slug: string } }
         <EntryNotes
           entryId={entry.id}
           entrySlug={entry.slug}
+          canAdd={perms.canAdd}
+          canEdit={perms.canEdit}
+          canDelete={perms.canDelete}
           notes={entry.notes.map((n) => ({ id: n.id, content: n.content, updatedAt: n.updatedAt.toISOString() }))}
         />
       </section>

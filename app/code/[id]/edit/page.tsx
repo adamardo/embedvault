@@ -1,3 +1,4 @@
+import { requireCanEdit } from "@/lib/permissions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -14,6 +15,7 @@ export default async function EditSnippetPage({
   params: { id: string };
   searchParams: { error?: string };
 }) {
+  await requireCanEdit();
   const s = await prisma.codeSnippet.findUnique({
     where: { id: params.id },
     include: { tags: { include: { tag: true } } },

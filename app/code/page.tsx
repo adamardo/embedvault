@@ -1,3 +1,4 @@
+import { CanAdd } from "@/components/Permissions";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -33,12 +34,12 @@ export default async function CodeLibraryPage({ searchParams }: { searchParams: 
             {selected ? ` for ${selected}` : ""}
           </p>
         </div>
-        <Link
+        <CanAdd><Link
           href="/code/new"
           className="flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-light"
         >
           <Plus size={16} /> New snippet
-        </Link>
+        </Link></CanAdd>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2">

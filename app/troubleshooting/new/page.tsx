@@ -1,3 +1,4 @@
+import { requireCanAdd } from "@/lib/permissions";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import GuideForm from "@/components/GuideForm";
@@ -6,6 +7,7 @@ import { createGuide } from "@/app/actions/guides";
 export const dynamic = "force-dynamic";
 
 export default async function NewGuidePage({ searchParams }: { searchParams: { error?: string } }) {
+  await requireCanAdd();
   const entries = await prisma.entry.findMany({ select: { id: true, title: true }, orderBy: { title: "asc" } });
 
   return (

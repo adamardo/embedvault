@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import { addRelation, removeRelation } from "@/app/actions/relations";
+import { MemberOnly, CanAdd } from "@/components/Permissions";
 
 type RelatedItem = {
   relationId: string;
@@ -41,20 +42,20 @@ export default function RelationsEditor({
                 {r.entry.title}
               </Link>
               {r.label && <span className="text-xs text-gray-500">{r.label}</span>}
-              <form action={removeRelation}>
+              <MemberOnly><form action={removeRelation}>
                 <input type="hidden" name="id" value={r.relationId} />
                 <input type="hidden" name="slug" value={entrySlug} />
                 <button type="submit" title="Remove link" className="text-gray-500 hover:text-red-400">
                   <X size={13} />
                 </button>
-              </form>
+              </form></MemberOnly>
             </span>
           ))}
         </div>
       )}
 
       {available.length > 0 ? (
-        <form action={addRelation} className="flex flex-wrap gap-2">
+        <CanAdd><form action={addRelation} className="flex flex-wrap gap-2">
           <input type="hidden" name="fromEntryId" value={entryId} />
           <input type="hidden" name="slug" value={entrySlug} />
           <select
@@ -77,7 +78,7 @@ export default function RelationsEditor({
           <button type="submit" className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-gray-300 hover:bg-white/5">
             Add link
           </button>
-        </form>
+        </form></CanAdd>
       ) : (
         <p className="text-sm text-gray-500">
           {related.length === 0 ? "No other entries to link to yet." : "Every other entry is already linked."}

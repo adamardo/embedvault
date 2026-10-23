@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireCanAdd, requireCanEdit, requireMember } from "@/lib/permissions";
 
 const norm = (v: FormDataEntryValue | null) => String(v ?? "").replace(/\r\n/g, "\n");
 const text = (fd: FormData, key: string) => norm(fd.get(key)).trim();
@@ -16,6 +17,7 @@ function fail(path: string, message: string): never {
 }
 
 export async function createProject(formData: FormData) {
+  await requireCanAdd();
   const title = text(formData, "title");
   if (!title) fail("/projects/new", "Title is required.");
 
@@ -33,6 +35,7 @@ export async function createProject(formData: FormData) {
 }
 
 export async function updateProject(formData: FormData) {
+  await requireCanEdit();
   const id = text(formData, "id");
   if (!id) redirect("/projects");
 
@@ -54,6 +57,7 @@ export async function updateProject(formData: FormData) {
 }
 
 export async function deleteProject(formData: FormData) {
+  await requireMember();
   const id = text(formData, "id");
   if (id) await prisma.project.delete({ where: { id } }).catch(() => null);
   revalidatePath("/projects");
@@ -65,6 +69,7 @@ export async function deleteProject(formData: FormData) {
 // redirect back there instead of somewhere new.
 
 export async function addProjectEntry(formData: FormData) {
+  await requireCanAdd();
   const projectId = text(formData, "projectId");
   const entryId = text(formData, "entryId");
   if (projectId && entryId) {
@@ -79,6 +84,7 @@ export async function addProjectEntry(formData: FormData) {
 }
 
 export async function removeProjectEntry(formData: FormData) {
+  await requireMember();
   const projectId = text(formData, "projectId");
   const entryId = text(formData, "entryId");
   if (projectId && entryId) {

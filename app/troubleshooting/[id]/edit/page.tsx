@@ -1,3 +1,4 @@
+import { requireCanEdit } from "@/lib/permissions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -13,6 +14,7 @@ export default async function EditGuidePage({
   params: { id: string };
   searchParams: { error?: string };
 }) {
+  await requireCanEdit();
   const g = await prisma.troubleshootingGuide.findUnique({ where: { id: params.id } });
   if (!g) notFound();
 
